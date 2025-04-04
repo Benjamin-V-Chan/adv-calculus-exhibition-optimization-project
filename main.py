@@ -311,4 +311,23 @@ class StickShapeDetector:
                 self.opt_blue_cost.config(text="")
                 self.opt_area.config(text="")
                 self.opt_total_cost.config(text="")
+            else:
+                opt_red, opt_blue = self.calculate_optimal_sticks()
+                opt_red_cost = opt_red * self.red_cost_per_stick
+                opt_blue_cost = opt_blue * self.blue_cost_per_stick
+                opt_total_cost = opt_red_cost + opt_blue_cost
+                opt_area = opt_red * opt_blue
                 
+                self.red_count.config(text=f"Current Red Sticks: {self.red_sticks}")
+                self.red_cost.config(text=f"Current Red Cost: ${self.red_sticks * self.red_cost_per_stick:.2f}")
+                self.blue_count.config(text=f"Current Blue Sticks: {self.blue_sticks}")
+                self.blue_cost.config(text=f"Current Blue Cost: ${self.blue_sticks * self.blue_cost_per_stick:.2f}")
+                self.area_label.config(text=f"Current Area: {self.red_sticks * self.blue_sticks} units²")
+                self.total_cost.config(text=f"Current Total Cost: ${self.calculate_costs()[2]:.2f}")
+                
+                self.opt_red_count.config(text=f"Optimal Red Sticks: {opt_red}")
+                self.opt_red_cost.config(text=f"Optimal Red Cost: ${opt_red_cost:.2f}")
+                self.opt_blue_count.config(text=f"Optimal Blue Sticks: {opt_blue}")
+                self.opt_blue_cost.config(text=f"Optimal Blue Cost: ${opt_blue_cost:.2f}")
+                self.opt_area.config(text=f"Optimal Area: {opt_area} units²")
+                self.opt_total_cost.config(text=f"Optimal Total Cost: ${opt_total_cost:.2f}")
