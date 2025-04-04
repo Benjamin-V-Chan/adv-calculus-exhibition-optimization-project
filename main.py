@@ -331,7 +331,12 @@ class StickShapeDetector:
                 self.opt_blue_cost.config(text=f"Optimal Blue Cost: ${opt_blue_cost:.2f}")
                 self.opt_area.config(text=f"Optimal Area: {opt_area} units²")
                 self.opt_total_cost.config(text=f"Optimal Total Cost: ${opt_total_cost:.2f}")
-        
+
+        self.root.after(50, self.update)
+
     def __del__(self):
         if self.cap.isOpened():
             self.cap.release()
+
+if __name__ == "__main__":
+    detector = StickShapeDetector()
