@@ -219,3 +219,38 @@ class StickShapeDetector:
                         opt_red = red
                         opt_blue = blue
         return opt_red, opt_blue
+
+    def draw_rectangle(self):
+        self.canvas.delete("all")
+        
+        # Draw grid (each cell represents 1 unit)
+        for i in range(self.max_size + 1):
+            self.canvas.create_line(i*self.cell_size, 0, i*self.cell_size, 
+                                  self.max_size*self.cell_size, fill="gray", dash=(2, 2))
+            self.canvas.create_line(0, i*self.cell_size, self.max_size*self.cell_size, 
+                                  i*self.cell_size, fill="gray", dash=(2, 2))
+        
+        total_width = self.max_size * self.cell_size
+        total_height = self.max_size * self.cell_size
+        
+        # Draw current rectangle if sticks are detected and not optimized
+        if self.red_sticks > 0 and self.blue_sticks > 0 and not self.show_optimized:
+            rect_width = self.red_sticks * self.cell_size  # Each stick is 1 unit
+            rect_height = self.blue_sticks * self.cell_size  # Each stick is 1 unit
+            start_x = (total_width - rect_width) // 2
+            start_y = (total_height - rect_height) // 2
+            
+            self.canvas.create_rectangle(start_x, start_y, 
+                                       start_x + rect_width, start_y + rect_height,
+                                       fill='#e6f3ff', outline='')
+            self.canvas.create_line(start_x, start_y, start_x + rect_width, start_y,
+                                  fill="red", width=4)
+            self.canvas.create_line(start_x, start_y + rect_height, 
+                                  start_x + rect_width, start_y + rect_height,
+                                  fill="red", width=4)
+            self.canvas.create_line(start_x, start_y, start_x, start_y + rect_height,
+                                  fill="blue", width=4)
+            self.canvas.create_line(start_x + rect_width, start_y, 
+                                  start_x + rect_width, start_y + rect_height,
+                                  fill="blue", width=4)
+        
