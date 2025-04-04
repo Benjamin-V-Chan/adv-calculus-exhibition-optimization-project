@@ -179,3 +179,25 @@ class StickShapeDetector:
         
         self.red_sticks = 0
         self.blue_sticks = 0
+
+        for contour in red_contours:
+            if cv2.contourArea(contour) > 200:
+                x, y, w, h = cv2.boundingRect(contour)
+                aspect_ratio = float(w)/h if w > h else float(h)/w
+                if aspect_ratio > 2.0:
+                    self.red_sticks += 1  # Each stick is 1 unit long
+                    cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
+        
+        for contour in blue_contours:
+            if cv2.contourArea(contour) > 200:
+                x, y, w, h = cv2.boundingRect(contour)
+                aspect_ratio = float(w)/h if w > h else float(h)/w
+                if aspect_ratio > 2.0:
+                    self.blue_sticks += 1  # Each stick is 1 unit long
+                    cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
+        
+        # Ensure even numbers of sticks (round down to nearest even number)
+        self.red_sticks = min(self.red_sticks - (self.red_sticks % 2), self.max_size)
+        self.blue_sticks = min(self.blue_sticks - (self.blue_sticks % 2), self.max_size)
+        
+        return frame
