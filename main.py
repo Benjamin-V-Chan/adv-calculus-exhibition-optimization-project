@@ -201,3 +201,21 @@ class StickShapeDetector:
         self.blue_sticks = min(self.blue_sticks - (self.blue_sticks % 2), self.max_size)
         
         return frame
+    
+    def calculate_optimal_sticks(self):
+        # Maximize area (red * blue) within budget
+        # Each stick is 1 unit long, must use even numbers of sticks
+        max_area = 0
+        opt_red = 0
+        opt_blue = 0
+        
+        for red in range(0, self.max_size + 1, 2):  # Even numbers: 0, 2, 4, 6, 8, 10
+            for blue in range(0, self.max_size + 1, 2):  # Even numbers: 0, 2, 4, 6, 8, 10
+                cost = red * self.red_cost_per_stick + blue * self.blue_cost_per_stick
+                if cost <= self.budget:
+                    area = red * blue  # Each stick is 1 unit, so area = number of red * number of blue
+                    if area > max_area:
+                        max_area = area
+                        opt_red = red
+                        opt_blue = blue
+        return opt_red, opt_blue
