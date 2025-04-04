@@ -153,3 +153,29 @@ class StickShapeDetector:
             self.opt_blue_cost.config(text="")
             self.opt_area.config(text="")
             self.opt_total_cost.config(text="")
+
+    def detect_sticks(self, frame):
+        blurred = cv2.GaussianBlur(frame, (5, 5), 0)
+        hsv = cv2.cvtColor(blurred, cv2.COLOR_BGR2HSV)
+        
+        red_lower1 = np.array([0, 120, 70])
+        red_upper1 = np.array([10, 255, 255])
+        red_lower2 = np.array([170, 120, 70])
+        red_upper2 = np.array([180, 255, 255])
+        blue_lower = np.array([100, 150, 0])
+        blue_upper = np.array([140, 255, 255])
+        
+        red_mask1 = cv2.inRange(hsv, red_lower1, red_upper1)
+        red_mask2 = cv2.inRange(hsv, red_lower2, red_upper2)
+        red_mask = cv2.bitwise_or(red_mask1, red_mask2)
+        blue_mask = cv2.inRange(hsv, blue_lower, blue_upper)
+        
+        kernel = np.ones((5,5), np.uint8)
+        red_mask = cv2.morphologyEx(red_mask, cv2.MORPH_OPEN, kernel)
+        blue_mask = cv2.morphologyEx(blue_mask, cv2.MORPH_OPEN, kernel)
+        
+        red_contours, _ = cv2.findContours(red_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        blue_contours, _ = cv2.findContours(blue_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        
+        self.red_sticks = 0
+        self.blue_sticks = 0
