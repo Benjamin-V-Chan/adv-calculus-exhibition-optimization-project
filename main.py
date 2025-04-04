@@ -275,3 +275,9 @@ class StickShapeDetector:
             self.canvas.create_line(opt_start_x + opt_width, opt_start_y, 
                                   opt_start_x + opt_width, opt_start_y + opt_height,
                                   fill="blue", width=4)
+
+    def calculate_costs(self):
+        red_total = self.red_sticks * self.red_cost_per_stick
+        blue_total = self.blue_sticks * self.blue_cost_per_stick
+        total_cost = red_total + blue_total
+        return red_total, blue_total, total_cost
