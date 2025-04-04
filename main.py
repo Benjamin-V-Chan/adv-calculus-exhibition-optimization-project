@@ -31,3 +31,114 @@ class StickShapeDetector:
         
         self.update()
         self.root.mainloop()
+        
+
+    def setup_gui(self):
+        self.main_frame = tk.Frame(self.root, bg='#e0e0e0')
+        self.main_frame.pack(padx=15, pady=15, fill=tk.BOTH, expand=True)
+
+        self.left_frame = tk.Frame(self.main_frame, bg='#e0e0e0')
+        self.left_frame.pack(side=tk.LEFT, padx=10, fill=tk.Y)
+        
+        self.canvas_frame = tk.LabelFrame(self.left_frame, text="Rectangle Display", 
+                                        bg='white', font=('Arial', 12, 'bold'), 
+                                        relief=tk.GROOVE, bd=2)
+        self.canvas_frame.pack(pady=5)
+        
+        self.canvas = tk.Canvas(self.canvas_frame, width=self.max_size*self.cell_size, 
+                              height=self.max_size*self.cell_size, bg='white')
+        self.canvas.pack(pady=5)
+        
+        self.opt_btn = tk.Button(self.canvas_frame, text="Show Optimized Area", 
+                               command=self.toggle_optimized, bg='#2196F3', fg='white',
+                               font=('Arial', 10, 'bold'), relief=tk.RAISED, bd=3)
+        self.opt_btn.pack(pady=5)
+        
+        self.constants_frame = tk.LabelFrame(self.left_frame, text="Constants", 
+                                           bg='#f5f5f5', font=('Arial', 12, 'bold'),
+                                           relief=tk.GROOVE, bd=2)
+        self.constants_frame.pack(pady=5, fill=tk.X)
+        
+        self.const_budget = tk.Label(self.constants_frame, 
+                                   text=f"Budget: ${self.budget:.2f}", 
+                                   bg='#f5f5f5', font=('Arial', 10), anchor='w')
+        self.const_budget.pack(fill=tk.X, padx=5, pady=1)
+        
+        self.const_red_cost = tk.Label(self.constants_frame, 
+                                     text=f"Red Stick Cost: ${self.red_cost_per_stick:.2f} (1 unit)", 
+                                     bg='#f5f5f5', font=('Arial', 10), fg='#d32f2f', anchor='w')
+        self.const_red_cost.pack(fill=tk.X, padx=5, pady=1)
+        
+        self.const_blue_cost = tk.Label(self.constants_frame, 
+                                      text=f"Blue Stick Cost: ${self.blue_cost_per_stick:.2f} (1 unit)", 
+                                      bg='#f5f5f5', font=('Arial', 10), fg='#1976d2', anchor='w')
+        self.const_blue_cost.pack(fill=tk.X, padx=5, pady=1)
+        
+        self.const_max_size = tk.Label(self.constants_frame, 
+                                     text=f"Max Sticks: {self.max_size} (even only)", 
+                                     bg='#f5f5f5', font=('Arial', 10), anchor='w')
+        self.const_max_size.pack(fill=tk.X, padx=5, pady=1)
+        
+        self.right_frame = tk.Frame(self.main_frame, bg='#e0e0e0')
+        self.right_frame.pack(side=tk.RIGHT, padx=10, fill=tk.BOTH, expand=True)
+        
+        self.camera_frame = tk.LabelFrame(self.right_frame, text="Camera Feed", 
+                                        bg='white', font=('Arial', 12, 'bold'),
+                                        relief=tk.GROOVE, bd=2)
+        self.camera_frame.pack(pady=5, fill=tk.X)
+        
+        self.camera_label = tk.Label(self.camera_frame, bg='white')
+        self.camera_label.pack(pady=5)
+        
+        self.info_frame = tk.LabelFrame(self.right_frame, text="Analysis Dashboard", 
+                                      bg='#f5f5f5', font=('Arial', 14, 'bold'),
+                                      relief=tk.GROOVE, bd=2)
+        self.info_frame.pack(pady=5, fill=tk.BOTH, expand=True)
+        
+        self.red_count = tk.Label(self.info_frame, text="Red Sticks: 0", bg='#f5f5f5',
+                                font=('Arial', 12), fg='#d32f2f', anchor='w')
+        self.red_count.pack(fill=tk.X, padx=10, pady=2)
+        
+        self.red_cost = tk.Label(self.info_frame, text="Red Cost: $0.00", bg='#f5f5f5',
+                               font=('Arial', 12), fg='#d32f2f', anchor='w')
+        self.red_cost.pack(fill=tk.X, padx=10, pady=2)
+        
+        self.blue_count = tk.Label(self.info_frame, text="Blue Sticks: 0", bg='#f5f5f5',
+                                 font=('Arial', 12), fg='#1976d2', anchor='w')
+        self.blue_count.pack(fill=tk.X, padx=10, pady=2)
+        
+        self.blue_cost = tk.Label(self.info_frame, text="Blue Cost: $0.00", bg='#f5f5f5',
+                                font=('Arial', 12), fg='#1976d2', anchor='w')
+        self.blue_cost.pack(fill=tk.X, padx=10, pady=2)
+        
+        self.area_label = tk.Label(self.info_frame, text="Area: 0 units²", bg='#f5f5f5',
+                                 font=('Arial', 12), anchor='w')
+        self.area_label.pack(fill=tk.X, padx=10, pady=2)
+        
+        self.total_cost = tk.Label(self.info_frame, text="Total Cost: $0.00", bg='#f5f5f5',
+                                 font=('Arial', 12, 'bold'), fg='#388e3c', anchor='w')
+        self.total_cost.pack(fill=tk.X, padx=10, pady=2)
+        
+        self.opt_red_count = tk.Label(self.info_frame, text="", bg='#f5f5f5',
+                                    font=('Arial', 12, 'italic'), fg='#d32f2f', anchor='w')
+        self.opt_red_count.pack(fill=tk.X, padx=10, pady=2)
+        
+        self.opt_red_cost = tk.Label(self.info_frame, text="", bg='#f5f5f5',
+                                   font=('Arial', 12, 'italic'), fg='#d32f2f', anchor='w')
+        self.opt_red_cost.pack(fill=tk.X, padx=10, pady=2)
+        
+        self.opt_blue_count = tk.Label(self.info_frame, text="", bg='#f5f5f5',
+                                     font=('Arial', 12, 'italic'), fg='#1976d2', anchor='w')
+        self.opt_blue_count.pack(fill=tk.X, padx=10, pady=2)
+        
+        self.opt_blue_cost = tk.Label(self.info_frame, text="", bg='#f5f5f5',
+                                    font=('Arial', 12, 'italic'), fg='#1976d2', anchor='w')
+        self.opt_blue_cost.pack(fill=tk.X, padx=10, pady=2)
+        
+        self.opt_area = tk.Label(self.info_frame, text="", bg='#f5f5f5',
+                               font=('Arial', 12, 'italic'), anchor='w')
+        self.opt_area.pack(fill=tk.X, padx=10, pady=2)
+        
+        self.opt_total_cost = tk.Label(self.info_frame, text="", bg='#f5f5f5',
+                                     font=('Arial', 12, 'bold', 'italic'), fg='#388e3c', anchor='w')
+        self.opt_total_cost.pack(fill=tk.X, padx=10, pady=2)
