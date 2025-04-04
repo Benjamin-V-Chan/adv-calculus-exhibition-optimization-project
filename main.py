@@ -253,4 +253,25 @@ class StickShapeDetector:
             self.canvas.create_line(start_x + rect_width, start_y, 
                                   start_x + rect_width, start_y + rect_height,
                                   fill="blue", width=4)
-        
+            
+        # Draw optimized rectangle when toggled
+        if self.show_optimized:
+            opt_red, opt_blue = self.calculate_optimal_sticks()
+            opt_width = opt_red * self.cell_size  # Each stick is 1 unit
+            opt_height = opt_blue * self.cell_size  # Each stick is 1 unit
+            opt_start_x = (total_width - opt_width) // 2
+            opt_start_y = (total_height - opt_height) // 2
+            
+            self.canvas.create_rectangle(opt_start_x, opt_start_y,
+                                       opt_start_x + opt_width, opt_start_y + opt_height,
+                                       fill='#e6ffe6', outline='')
+            self.canvas.create_line(opt_start_x, opt_start_y, opt_start_x + opt_width, opt_start_y,
+                                  fill="red", width=4)
+            self.canvas.create_line(opt_start_x, opt_start_y + opt_height, 
+                                  opt_start_x + opt_width, opt_start_y + opt_height,
+                                  fill="red", width=4)
+            self.canvas.create_line(opt_start_x, opt_start_y, opt_start_x, opt_start_y + opt_height,
+                                  fill="blue", width=4)
+            self.canvas.create_line(opt_start_x + opt_width, opt_start_y, 
+                                  opt_start_x + opt_width, opt_start_y + opt_height,
+                                  fill="blue", width=4)
