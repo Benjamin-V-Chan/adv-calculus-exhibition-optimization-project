@@ -142,3 +142,14 @@ class StickShapeDetector:
         self.opt_total_cost = tk.Label(self.info_frame, text="", bg='#f5f5f5',
                                      font=('Arial', 12, 'bold', 'italic'), fg='#388e3c', anchor='w')
         self.opt_total_cost.pack(fill=tk.X, padx=10, pady=2)
+        
+    def toggle_optimized(self):
+        self.show_optimized = not self.show_optimized
+        self.opt_btn.config(text="Hide Optimized Area" if self.show_optimized else "Show Optimized Area")
+        if not self.show_optimized:
+            self.opt_red_count.config(text="")
+            self.opt_red_cost.config(text="")
+            self.opt_blue_count.config(text="")
+            self.opt_blue_cost.config(text="")
+            self.opt_area.config(text="")
+            self.opt_total_cost.config(text="")
