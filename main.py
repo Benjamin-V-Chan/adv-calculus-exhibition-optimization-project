@@ -281,3 +281,34 @@ class StickShapeDetector:
         blue_total = self.blue_sticks * self.blue_cost_per_stick
         total_cost = red_total + blue_total
         return red_total, blue_total, total_cost
+
+    def update(self):
+        ret, frame = self.cap.read()
+        if ret:
+            frame = self.detect_sticks(frame)
+            
+            frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            img = Image.fromarray(frame_rgb)
+            imgtk = ImageTk.PhotoImage(image=img)
+            self.camera_label.imgtk = imgtk
+            self.camera_label.configure(image=imgtk)
+            
+            self.draw_rectangle()
+            
+            if not self.show_optimized:
+                self.red_count.config(text=f"Red Sticks: {self.red_sticks}")
+                self.blue_count.config(text=f"Blue Sticks: {self.blue_sticks}")
+                area = self.red_sticks * self.blue_sticks
+                self.area_label.config(text=f"Area: {area} units²")
+                red_cost, blue_cost, total_cost = self.calculate_costs()
+                self.red_cost.config(text=f"Red Cost: ${red_cost:.2f}")
+                self.blue_cost.config(text=f"Blue Cost: ${blue_cost:.2f}")
+                self.total_cost.config(text=f"Total Cost: ${total_cost:.2f}")
+                
+                self.opt_red_count.config(text="")
+                self.opt_red_cost.config(text="")
+                self.opt_blue_count.config(text="")
+                self.opt_blue_cost.config(text="")
+                self.opt_area.config(text="")
+                self.opt_total_cost.config(text="")
+                
