@@ -194,7 +194,7 @@ class StickShapeDetector:
                     cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
         
         # Ensure even numbers of sticks
-        self.red_sticks = min(self.red_sticks - (self.red_sticks % 2), self.max_size)
+        self.red_sticks = min(self.red_sticks - (self.red_sticks % 2), self.max_size) / 2
         self.blue_sticks = min(self.blue_sticks - (self.blue_sticks % 2), self.max_size)
         
         return frame
