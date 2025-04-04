@@ -14,17 +14,17 @@ class StickShapeDetector:
         
         # Display parameters
         self.cell_size = 50  # Pixels per unit (1 stick = 1 unit = 50 pixels)
-        self.max_size = 10   # Max sticks per side (even counts: 0, 2, 4, 6, 8, 10)
+        self.max_size = 10   # Max total sticks per type (even: 0, 2, 4, 6, 8, 10)
         self.show_optimized = False
         
         # Cost parameters
-        self.red_cost_per_stick = 2.50  # Cost per red stick (1 unit long, base)
-        self.blue_cost_per_stick = 3.00 # Cost per blue stick (1 unit long, height)
+        self.red_cost_per_stick = 2.50  # Cost per red stick (1 unit long)
+        self.blue_cost_per_stick = 3.00 # Cost per blue stick (1 unit long)
         self.budget = 30.00             # Total budget in dollars
         
         self.setup_gui()
-        self.red_sticks = 0  # Number of red sticks (base)
-        self.blue_sticks = 0  # Number of blue sticks (height)
+        self.red_sticks = 0  # Total red sticks detected
+        self.blue_sticks = 0  # Total blue sticks detected
         
         self.update()
         self.root.mainloop()
@@ -41,7 +41,6 @@ class StickShapeDetector:
                                         relief=tk.GROOVE, bd=2)
         self.canvas_frame.pack(pady=5)
         
-        # Canvas: 10x10 units, 500x500 pixels
         self.canvas = tk.Canvas(self.canvas_frame, width=self.max_size*self.cell_size, 
                               height=self.max_size*self.cell_size, bg='white')
         self.canvas.pack(pady=5)
@@ -62,17 +61,17 @@ class StickShapeDetector:
         self.const_budget.pack(fill=tk.X, padx=5, pady=1)
         
         self.const_red_cost = tk.Label(self.constants_frame, 
-                                     text=f"Red Stick Cost: ${self.red_cost_per_stick:.2f} (1 unit, base)", 
+                                     text=f"Red Stick Cost: ${self.red_cost_per_stick:.2f} (1 unit)", 
                                      bg='#f5f5f5', font=('Arial', 10), fg='#d32f2f', anchor='w')
         self.const_red_cost.pack(fill=tk.X, padx=5, pady=1)
         
         self.const_blue_cost = tk.Label(self.constants_frame, 
-                                      text=f"Blue Stick Cost: ${self.blue_cost_per_stick:.2f} (1 unit, height)", 
+                                      text=f"Blue Stick Cost: ${self.blue_cost_per_stick:.2f} (1 unit)", 
                                       bg='#f5f5f5', font=('Arial', 10), fg='#1976d2', anchor='w')
         self.const_blue_cost.pack(fill=tk.X, padx=5, pady=1)
         
         self.const_max_size = tk.Label(self.constants_frame, 
-                                     text=f"Max Sticks per Side: {self.max_size} (even only)", 
+                                     text=f"Max Total Sticks: {self.max_size} (even only)", 
                                      bg='#f5f5f5', font=('Arial', 10), anchor='w')
         self.const_max_size.pack(fill=tk.X, padx=5, pady=1)
         
@@ -92,7 +91,7 @@ class StickShapeDetector:
                                       relief=tk.GROOVE, bd=2)
         self.info_frame.pack(pady=5, fill=tk.BOTH, expand=True)
         
-        self.red_count = tk.Label(self.info_frame, text="Red Sticks (Base): 0", bg='#f5f5f5',
+        self.red_count = tk.Label(self.info_frame, text="Total Red Sticks: 0", bg='#f5f5f5',
                                 font=('Arial', 12), fg='#d32f2f', anchor='w')
         self.red_count.pack(fill=tk.X, padx=10, pady=2)
         
@@ -100,7 +99,7 @@ class StickShapeDetector:
                                font=('Arial', 12), fg='#d32f2f', anchor='w')
         self.red_cost.pack(fill=tk.X, padx=10, pady=2)
         
-        self.blue_count = tk.Label(self.info_frame, text="Blue Sticks (Height): 0", bg='#f5f5f5',
+        self.blue_count = tk.Label(self.info_frame, text="Total Blue Sticks: 0", bg='#f5f5f5',
                                  font=('Arial', 12), fg='#1976d2', anchor='w')
         self.blue_count.pack(fill=tk.X, padx=10, pady=2)
         
@@ -182,7 +181,7 @@ class StickShapeDetector:
                 x, y, w, h = cv2.boundingRect(contour)
                 aspect_ratio = float(w)/h if w > h else float(h)/w
                 if aspect_ratio > 2.0:
-                    self.red_sticks += 1  # Each red stick = 1 unit (base)
+                    self.red_sticks += 1
                     cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
         
         for contour in blue_contours:
@@ -190,88 +189,82 @@ class StickShapeDetector:
                 x, y, w, h = cv2.boundingRect(contour)
                 aspect_ratio = float(w)/h if w > h else float(h)/w
                 if aspect_ratio > 2.0:
-                    self.blue_sticks += 1  # Each blue stick = 1 unit (height)
+                    self.blue_sticks += 1
                     cv2.rectangle(frame, (x, y), (x+w, y+h), (255, 0, 0), 2)
         
         # Ensure even numbers of sticks
-        self.red_sticks = min(self.red_sticks - (self.red_sticks % 2), self.max_size) / 2
+        self.red_sticks = min(self.red_sticks - (self.red_sticks % 2), self.max_size)
         self.blue_sticks = min(self.blue_sticks - (self.blue_sticks % 2), self.max_size)
         
         return frame
 
     def calculate_optimal_sticks(self):
-        # Maximize area (base * height) within budget
-        # Red = base, Blue = height, each stick = 1 unit, even counts only
         max_area = 0
         opt_red = 0
         opt_blue = 0
         
-        for red in range(0, self.max_size + 1, 2):  # Even red sticks (base)
-            for blue in range(0, self.max_size + 1, 2):  # Even blue sticks (height)
+        for red in range(0, self.max_size + 1, 2):  # Total red sticks
+            for blue in range(0, self.max_size + 1, 2):  # Total blue sticks
                 cost = red * self.red_cost_per_stick + blue * self.blue_cost_per_stick
                 if cost <= self.budget:
-                    area = red * blue  # Area = base * height, 1 unit per stick
+                    area = (red // 2) * (blue // 2)  # Area = (total red / 2) * (total blue / 2)
                     if area > max_area:
                         max_area = area
                         opt_red = red
                         opt_blue = blue
         return opt_red, opt_blue
 
-    def draw_rectangle(self):
+    def draw_rectangle(self, red_sticks, blue_sticks):
         self.canvas.delete("all")
         
-        # Draw 10x10 grid, each cell = 1 unit = 1 stick = 50 pixels
-        for i in range(self.max_size + 1):
-            self.canvas.create_line(i*self.cell_size, 0, i*self.cell_size, 
-                                  self.max_size*self.cell_size, fill="gray", dash=(2, 2))
-            self.canvas.create_line(0, i*self.cell_size, self.max_size*self.cell_size, 
-                                  i*self.cell_size, fill="gray", dash=(2, 2))
+        # Canvas center in pixels (250, 250) aligns with unit (5, 5)
+        canvas_width = self.max_size * self.cell_size  # 500 pixels
+        canvas_height = self.max_size * self.cell_size  # 500 pixels
+        center_x = canvas_width // 2  # 250 pixels
+        center_y = canvas_height // 2  # 250 pixels
         
-        total_width = self.max_size * self.cell_size  # 10 units = 500 pixels
-        total_height = self.max_size * self.cell_size  # 10 units = 500 pixels
+        # Draw grid: 11 lines (0 to 10), centered at (5, 5)
+        for i in range(self.max_size + 1):  # 0 to 10
+            x = i * self.cell_size  # 0, 50, 100, ..., 500
+            y = i * self.cell_size
+            self.canvas.create_line(x, 0, x, canvas_height, fill="gray", dash=(2, 2))
+            self.canvas.create_line(0, y, canvas_width, y, fill="gray", dash=(2, 2))
         
-        # Draw current rectangle (red = base, blue = height)
-        if self.red_sticks > 0 and self.blue_sticks > 0 and not self.show_optimized:
-            rect_width = self.red_sticks * self.cell_size  # Base: 1 unit per red stick
-            rect_height = self.blue_sticks * self.cell_size  # Height: 1 unit per blue stick
-            start_x = (total_width - rect_width) // 2  # Center horizontally
-            start_y = (total_height - rect_height) // 2  # Center vertically
+        # Calculate base and height from total sticks
+        base = red_sticks // 2  # Units wide
+        height = blue_sticks // 2  # Units tall
+        
+        if base > 0 and height > 0:
+            # Rectangle dimensions in units, centered around (5, 5)
+            # Start coordinates in units relative to center (5, 5)
+            start_unit_x = 5 - (base // 2)  # Shift left from center
+            start_unit_y = 5 - (height // 2)  # Shift up from center
+            end_unit_x = start_unit_x + base
+            end_unit_y = start_unit_y + height
             
-            self.canvas.create_rectangle(start_x, start_y, 
-                                       start_x + rect_width, start_y + rect_height,
-                                       fill='#e6f3ff', outline='')
-            self.canvas.create_line(start_x, start_y, start_x + rect_width, start_y,
-                                  fill="red", width=4)  # Top (base)
-            self.canvas.create_line(start_x, start_y + rect_height, 
-                                  start_x + rect_width, start_y + rect_height,
-                                  fill="red", width=4)  # Bottom (base)
-            self.canvas.create_line(start_x, start_y, start_x, start_y + rect_height,
-                                  fill="blue", width=4)  # Left (height)
-            self.canvas.create_line(start_x + rect_width, start_y, 
-                                  start_x + rect_width, start_y + rect_height,
-                                  fill="blue", width=4)  # Right (height)
-        
-        # Draw optimized rectangle
-        if self.show_optimized:
-            opt_red, opt_blue = self.calculate_optimal_sticks()
-            opt_width = opt_red * self.cell_size  # Base: 1 unit per red stick
-            opt_height = opt_blue * self.cell_size  # Height: 1 unit per blue stick
-            opt_start_x = (total_width - opt_width) // 2
-            opt_start_y = (total_height - opt_height) // 2
+            # Convert to pixel coordinates
+            start_x = start_unit_x * self.cell_size
+            start_y = start_unit_y * self.cell_size
+            end_x = end_unit_x * self.cell_size
+            end_y = end_unit_y * self.cell_size
             
-            self.canvas.create_rectangle(opt_start_x, opt_start_y,
-                                       opt_start_x + opt_width, opt_start_y + opt_height,
-                                       fill='#e6ffe6', outline='')
-            self.canvas.create_line(opt_start_x, opt_start_y, opt_start_x + opt_width, opt_start_y,
-                                  fill="red", width=4)  # Top (base)
-            self.canvas.create_line(opt_start_x, opt_start_y + opt_height, 
-                                  opt_start_x + opt_width, opt_start_y + opt_height,
-                                  fill="red", width=4)  # Bottom (base)
-            self.canvas.create_line(opt_start_x, opt_start_y, opt_start_x, opt_start_y + opt_height,
-                                  fill="blue", width=4)  # Left (height)
-            self.canvas.create_line(opt_start_x + opt_width, opt_start_y, 
-                                  opt_start_x + opt_width, opt_start_y + opt_height,
-                                  fill="blue", width=4)  # Right (height)
+            # Draw red sticks (horizontal, top and bottom)
+            for i in range(base):
+                x0 = start_x + i * self.cell_size
+                x1 = x0 + self.cell_size
+                # Top side
+                self.canvas.create_line(x0, start_y, x1, start_y, fill="red", width=4)
+                # Bottom side
+                self.canvas.create_line(x0, end_y, x1, end_y, fill="red", width=4)
+            
+            # Draw blue sticks (vertical, left and right)
+            for j in range(height):
+                y0 = start_y + j * self.cell_size
+                y1 = y0 + self.cell_size
+                # Left side
+                self.canvas.create_line(start_x, y0, start_x, y1, fill="blue", width=4)
+                # Right side
+                self.canvas.create_line(end_x, y0, end_x, y1, fill="blue", width=4)
 
     def calculate_costs(self):
         red_total = self.red_sticks * self.red_cost_per_stick
@@ -290,12 +283,11 @@ class StickShapeDetector:
             self.camera_label.imgtk = imgtk
             self.camera_label.configure(image=imgtk)
             
-            self.draw_rectangle()
-            
             if not self.show_optimized:
-                self.red_count.config(text=f"Red Sticks (Base): {self.red_sticks}")
-                self.blue_count.config(text=f"Blue Sticks (Height): {self.blue_sticks}")
-                area = self.red_sticks * self.blue_sticks  # Area = base * height
+                self.draw_rectangle(self.red_sticks, self.blue_sticks)
+                self.red_count.config(text=f"Total Red Sticks: {self.red_sticks}")
+                self.blue_count.config(text=f"Total Blue Sticks: {self.blue_sticks}")
+                area = (self.red_sticks // 2) * (self.blue_sticks // 2)
                 self.area_label.config(text=f"Area: {area} units²")
                 red_cost, blue_cost, total_cost = self.calculate_costs()
                 self.red_cost.config(text=f"Red Cost: ${red_cost:.2f}")
@@ -310,21 +302,22 @@ class StickShapeDetector:
                 self.opt_total_cost.config(text="")
             else:
                 opt_red, opt_blue = self.calculate_optimal_sticks()
+                self.draw_rectangle(opt_red, opt_blue)
                 opt_red_cost = opt_red * self.red_cost_per_stick
                 opt_blue_cost = opt_blue * self.blue_cost_per_stick
                 opt_total_cost = opt_red_cost + opt_blue_cost
-                opt_area = opt_red * opt_blue  # Area = base * height
+                opt_area = (opt_red // 2) * (opt_blue // 2)
                 
-                self.red_count.config(text=f"Current Red Sticks (Base): {self.red_sticks}")
+                self.red_count.config(text=f"Current Total Red Sticks: {self.red_sticks}")
                 self.red_cost.config(text=f"Current Red Cost: ${self.red_sticks * self.red_cost_per_stick:.2f}")
-                self.blue_count.config(text=f"Current Blue Sticks (Height): {self.blue_sticks}")
+                self.blue_count.config(text=f"Current Total Blue Sticks: {self.blue_sticks}")
                 self.blue_cost.config(text=f"Current Blue Cost: ${self.blue_sticks * self.blue_cost_per_stick:.2f}")
-                self.area_label.config(text=f"Current Area: {self.red_sticks * self.blue_sticks} units²")
+                self.area_label.config(text=f"Current Area: {(self.red_sticks // 2) * (self.blue_sticks // 2)} units²")
                 self.total_cost.config(text=f"Current Total Cost: ${self.calculate_costs()[2]:.2f}")
                 
-                self.opt_red_count.config(text=f"Optimal Red Sticks (Base): {opt_red}")
+                self.opt_red_count.config(text=f"Optimal Total Red Sticks: {opt_red}")
                 self.opt_red_cost.config(text=f"Optimal Red Cost: ${opt_red_cost:.2f}")
-                self.opt_blue_count.config(text=f"Optimal Blue Sticks (Height): {opt_blue}")
+                self.opt_blue_count.config(text=f"Optimal Total Blue Sticks: {opt_blue}")
                 self.opt_blue_cost.config(text=f"Optimal Blue Cost: ${opt_blue_cost:.2f}")
                 self.opt_area.config(text=f"Optimal Area: {opt_area} units²")
                 self.opt_total_cost.config(text=f"Optimal Total Cost: ${opt_total_cost:.2f}")
