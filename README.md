@@ -1,1 +1,1 @@
-# image-recognition-test
+# advanced-calculus-exhibition-optimization-project
